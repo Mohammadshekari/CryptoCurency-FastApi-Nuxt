@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  db:
+    container_name: crypto_db
+    image: postgres:15-alpine
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+    env_file:
+      - ./postgres/.env
+    expose:
+      - 5432
+    restart: always
+
+  backend:
+    container_name: crypto_backend
+    build:
+      context: .
+      dockerfile: ./dockerfiles/dev.core.Dockerfile
+    volumes:
+      - ./core:/usr/src/app
+    working_dir: /usr/src/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8070 --reload
+    ports:
+      - 8070:8070
+    environment:
+      - DEBUG=True
+    env_file:
+      - ./core/.env
+    restart: always
+    depends_on:
+      - db
+
+  pgadmin:
+    container_name: crypto_pgadmin
+    image: dpage/pgadmin4
+    volumes:
+      - ./pgadmin:/var/lib/pgadmin
+    env_file:
+      - ./pgadmin/.env
+    ports:
+      - "8888:80"
+    restart: unless-stopped
+
+  nginx:
+    container_name: crypto_nginx
+    image: nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend

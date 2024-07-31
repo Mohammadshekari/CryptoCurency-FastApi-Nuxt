@@ -1,0 +1,6 @@
+postgres/*
+!postgres/sample.env
+pgadmin/*
+!pgadmin/sample.env
+core/.env
+.idea
