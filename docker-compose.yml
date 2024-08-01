@@ -23,13 +23,27 @@ services:
     command: uvicorn main:app --host 0.0.0.0 --port 8070 --reload
     ports:
       - 8070:8070
-    environment:
-      - DEBUG=True
     env_file:
       - ./core/.env
     restart: always
     depends_on:
       - db
+
+  front:
+    container_name: crypto_front
+    build:
+      context: .
+      dockerfile: ./dockerfiles/dev.ui.Dockerfile
+    restart: unless-stopped
+    command: npm run dev
+    env_file:
+      - ./ui/.env
+    ports:
+      - 3000:3000
+    volumes:
+      - ./ui:/usr/src/ui
+      - /usr/src/ui/node_modules/
+      - /usr/src/ui/.nuxt/
 
   pgadmin:
     container_name: crypto_pgadmin
